@@ -1,0 +1,41 @@
+@import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Baloo 2", "Be Vietnam Pro", sans-serif;
+  --color-paper: #f6ead4;
+  --color-ink: #1e333c;
+  --color-muted: #6d6458;
+  --color-primary: #2a7399;
+  --color-primary-foreground: #f7fbff;
+  --color-accent: #c56d24;
+  --color-accent-foreground: #fff8ea;
+  --color-surface: #fff8ea;
+  --color-surface-2: #f7edd8;
+  --color-fg: #1e333c;
+  --color-border: #e0d2b4;
+  --color-ring: #2a7399;
+  --radius: 1.25rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.75rem;
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  html {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+  }
+
+  select {
+    appearance: none;
+    background-color: var(--color-surface);
+  }
+}

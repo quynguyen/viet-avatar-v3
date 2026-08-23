@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Truyện Avatar",
+      "hasCanvas": false,
+      "bodyTextLen": 303,
+      "bodyTextHash": "632d3dc2c06d2b64dd3ca2634f8f557e550f238a1499efdd796464234897a93c",
+      "bodyTextPrefix": "Truyện Avatar Avatar Aang Huyền thoại Korra Transformers Sonic P",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Truyện Avatar",
+      "hasCanvas": false,
+      "bodyTextLen": 303,
+      "bodyTextHash": "632d3dc2c06d2b64dd3ca2634f8f557e550f238a1499efdd796464234897a93c",
+      "bodyTextPrefix": "Truyện Avatar Avatar Aang Huyền thoại Korra Transformers Sonic P",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}
