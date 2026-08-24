@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -145,9 +145,8 @@ export function LexiconPanel({
                 const flagged = flagMap.get(key);
                 const showChips = picking === key;
                 return (
-                  <>
+                  <Fragment key={key}>
                     <tr
-                      key={key}
                       className={cn(
                         "border-b border-border/70",
                         flagged && "bg-accent/10",
@@ -182,7 +181,7 @@ export function LexiconPanel({
                       </td>
                     </tr>
                     {showChips && (
-                      <tr key={`${key}-reasons`} className="border-b border-border/70 bg-surface-2">
+                      <tr className="border-b border-border/70 bg-surface-2">
                         <td colSpan={3} className="px-3 py-3">
                           <p className="mb-2 text-[11px] font-medium text-muted">
                             Why is this wrong? / Vì sao sai?
@@ -223,7 +222,7 @@ export function LexiconPanel({
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
             </tbody>
