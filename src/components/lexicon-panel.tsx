@@ -59,6 +59,8 @@ export function LexiconPanel({
     return map;
   }, [flags]);
 
+  const reportText = useMemo(() => formatFlagsForGrok(flags), [flags]);
+
   const upsert = (row: Row, reason: FlagReasonId) => {
     const next: LexiconFlag = {
       seriesId,
@@ -84,18 +86,17 @@ export function LexiconPanel({
     setPicking(null);
   };
 
-  const onRowTap = (row: Row) => {
+  const togglePick = (row: Row) => {
     const key = flagKey({ seriesId, seasonId, pageId, level, en: row.en, vi: row.vi });
     setPicking((current) => (current === key ? null : key));
   };
 
   const copyReport = async () => {
-    const text = formatFlagsForGrok(flags);
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(reportText);
     } catch {
       const area = document.createElement("textarea");
-      area.value = text;
+      area.value = reportText;
       document.body.appendChild(area);
       area.select();
       document.execCommand("copy");
@@ -108,7 +109,7 @@ export function LexiconPanel({
   if (rows.length === 0) return null;
 
   return (
-    <div className={cn("mt-3", open && "pb-28")} data-lexicon>
+    <div className={cn("mt-3", open && "pb-4")} data-lexicon>
       <button
         type="button"
         aria-expanded={open}
@@ -126,81 +127,135 @@ export function LexiconPanel({
 
       {open && (
         <div id="page-lexicon" className="mt-2 overflow-hidden rounded-xl border border-border bg-surface">
+          <table className="w-full table-fixed text-left text-sm">
+            <thead>
+              <tr className="border-b border-border bg-surface-2">
+                <th className="w-[42%] px-3 py-2 font-display text-xs font-semibold tracking-wide text-primary">
+                  Tiếng Anh / English
+                </th>
+                <th className="w-[42%] px-3 py-2 font-display text-xs font-semibold tracking-wide text-accent">
+                  Nam Bộ
+                </th>
+                <th className="w-12 px-1 py-2" aria-label="Flag" />
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => {
+                const key = flagKey({ seriesId, seasonId, pageId, level, en: row.en, vi: row.vi });
+                const flagged = flagMap.get(key);
+                const showChips = picking === key;
+                return (
+                  <>
+                    <tr
+                      key={key}
+                      className={cn(
+                        "border-b border-border/70",
+                        flagged && "bg-accent/10",
+                        showChips && "bg-surface-2",
+                      )}
+                    >
+                      <td className="px-3 py-2.5 align-middle text-pretty text-ink">{row.en}</td>
+                      <td className="px-3 py-2.5 align-middle text-pretty text-ink">
+                        {row.vi}
+                        {flagged && (
+                          <span className="mt-1 block text-[11px] font-medium leading-snug text-accent">
+                            {reasonLabelBoth(flagged.reason)}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-1 py-1 align-middle">
+                        <button
+                          type="button"
+                          aria-pressed={Boolean(flagged) || showChips}
+                          aria-label="Flag translation / Gắn cờ bản dịch"
+                          onClick={() => togglePick(row)}
+                          className="flex size-11 items-center justify-center rounded-full text-muted hover:bg-surface-2 hover:text-accent"
+                        >
+                          <Flag
+                            className={cn(
+                              "size-5",
+                              (flagged || showChips) && "fill-accent text-accent",
+                            )}
+                            aria-hidden="true"
+                          />
+                        </button>
+                      </td>
+                    </tr>
+                    {showChips && (
+                      <tr key={`${key}-reasons`} className="border-b border-border/70 bg-surface-2">
+                        <td colSpan={3} className="px-3 py-3">
+                          <p className="mb-2 text-[11px] font-medium text-muted">
+                            Why is this wrong? / Vì sao sai?
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {FLAG_REASONS.map((reason) => (
+                              <button
+                                key={reason.id}
+                                type="button"
+                                onClick={() => upsert(row, reason.id)}
+                                className={cn(
+                                  "min-h-11 rounded-full border px-3 text-left text-xs font-medium",
+                                  flagged?.reason === reason.id
+                                    ? "border-accent bg-accent/15 text-accent"
+                                    : "border-border bg-paper text-ink",
+                                )}
+                              >
+                                {reason.en} / {reason.vi}
+                              </button>
+                            ))}
+                            {flagged && (
+                              <button
+                                type="button"
+                                onClick={() => clearRow(row)}
+                                className="min-h-11 rounded-full px-3 text-xs font-medium text-muted"
+                              >
+                                Remove flag / Bỏ cờ
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => setPicking(null)}
+                              className="min-h-11 rounded-full px-3 text-xs text-muted"
+                            >
+                              Cancel / Hủy
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                );
+              })}
+            </tbody>
+          </table>
+
           {flags.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 border-b border-border bg-surface-2 px-3 py-2">
-              <p className="text-xs font-semibold text-accent">
-                Flagged / Đã gắn cờ ({flags.length})
+            <div className="border-t border-border bg-surface-2 px-3 py-3">
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <p className="text-xs font-semibold text-accent">
+                  Issues for Grok / Vấn đề gửi Grok ({flags.length})
+                </p>
+                <Button type="button" variant="secondary" size="sm" className="h-9" onClick={copyReport}>
+                  {copied ? "Copied / Đã chép" : "Copy / Chép"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  className="h-9"
+                  onClick={() => setFlags([])}
+                >
+                  Clear all / Xóa hết
+                </Button>
+              </div>
+              <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded-lg border border-border bg-paper p-3 font-mono text-[11px] leading-relaxed text-ink">
+                {reportText}
+              </pre>
+              <p className="mt-2 text-[11px] text-muted">
+                Copy this block and paste it in chat so Grok can fix the rows. / Chép khối này và dán vào chat để Grok sửa.
               </p>
-              <Button type="button" variant="secondary" size="sm" className="h-9" onClick={copyReport}>
-                {copied ? "Copied / Đã chép" : "Copy for Grok / Chép cho Grok"}
-              </Button>
-              <Button type="button" variant="secondary" size="sm" className="h-9" onClick={() => setFlags([])}>
-                Clear all / Xóa hết
-              </Button>
             </div>
           )}
-
-          <ul className="divide-y divide-border/70">
-            {rows.map((row) => {
-              const key = flagKey({ seriesId, seasonId, pageId, level, en: row.en, vi: row.vi });
-              const flagged = flagMap.get(key);
-              const showChips = picking === key;
-              return (
-                <li key={key} className={cn(flagged && "bg-accent/10", showChips && "bg-surface-2")}>
-                  <button
-                    type="button"
-                    aria-pressed={Boolean(flagged) || showChips}
-                    onClick={() => onRowTap(row)}
-                    className="flex min-h-14 w-full items-start gap-2 px-3 py-3 text-left"
-                  >
-                    <Flag
-                      className={cn("mt-0.5 size-5 shrink-0", flagged || showChips ? "fill-accent text-accent" : "text-muted")}
-                      aria-hidden="true"
-                    />
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-pretty text-sm text-ink">{row.en}</span>
-                      <span className="mt-0.5 block text-pretty text-sm text-ink">{row.vi}</span>
-                      {flagged && (
-                        <span className="mt-1 block text-[11px] font-medium text-accent">
-                          {reasonLabelBoth(flagged.reason)}
-                        </span>
-                      )}
-                    </span>
-                  </button>
-                  {showChips && (
-                    <div className="flex flex-wrap gap-2 px-3 pb-3">
-                      {FLAG_REASONS.map((reason) => (
-                        <button
-                          key={reason.id}
-                          type="button"
-                          onClick={() => upsert(row, reason.id)}
-                          className="min-h-11 rounded-full border border-border bg-paper px-3 text-left text-xs font-medium text-ink"
-                        >
-                          {reason.en} / {reason.vi}
-                        </button>
-                      ))}
-                      {flagged && (
-                        <button
-                          type="button"
-                          onClick={() => clearRow(row)}
-                          className="min-h-11 rounded-full px-3 text-xs font-medium text-muted"
-                        >
-                          Remove flag / Bỏ cờ
-                        </button>
-                      )}
-                      <button type="button" onClick={() => setPicking(null)} className="min-h-11 rounded-full px-3 text-xs text-muted">
-                        Cancel / Hủy
-                      </button>
-                    </div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-
-          <p className="px-3 py-2 text-[11px] text-muted">
-            Tap a row to flag it. / Chạm một dòng để gắn cờ.
-          </p>
         </div>
       )}
     </div>
