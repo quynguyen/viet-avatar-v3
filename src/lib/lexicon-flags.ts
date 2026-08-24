@@ -3,6 +3,11 @@ export const FLAG_REASONS = [
   { id: "bad-phrase", en: "Bad phrase", vi: "Cụm sai" },
   { id: "missing-word", en: "Missing word", vi: "Thiếu từ" },
   { id: "should-not-exist", en: "Shouldn't exist", vi: "Không nên có" },
+  { id: "audio-missing-en", en: "The audio is missing English", vi: "Thiếu âm thanh tiếng Anh" },
+  { id: "audio-missing-vi", en: "The audio is missing Vietnamese", vi: "Thiếu âm thanh tiếng Việt" },
+  { id: "audio-vi-male", en: "The Vietnamese audio is a man, instead of a woman", vi: "Âm thanh tiếng Việt là nam, không phải nữ" },
+  { id: "audio-en-male", en: "The English audio is a man, instead of a woman", vi: "Âm thanh tiếng Anh là nam, không phải nữ" },
+  { id: "audio-overlap", en: "The audio is overlapping with the previous or next row", vi: "Âm thanh chồng lên dòng trước hoặc dòng sau" },
   { id: "other", en: "Other", vi: "Khác" },
 ] as const;
 
