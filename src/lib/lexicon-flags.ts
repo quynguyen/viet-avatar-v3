@@ -51,6 +51,12 @@ export function reasonLabel(id: FlagReasonId, lang: "en" | "vi"): string {
   return lang === "vi" ? row.vi : row.en;
 }
 
+export function reasonLabelBoth(id: FlagReasonId): string {
+  const row = FLAG_REASONS.find((item) => item.id === id);
+  if (!row) return id;
+  return `${row.en} / ${row.vi}`;
+}
+
 export function formatFlagsForGrok(flags: LexiconFlag[]): string {
   if (flags.length === 0) return "No flagged lexicon rows.";
   const lines = [
@@ -61,7 +67,8 @@ export function formatFlagsForGrok(flags: LexiconFlag[]): string {
   ];
   flags.forEach((flag, i) => {
     lines.push(
-      `${i + 1}. [${flag.reason}] ${flag.seriesEn} / ${flag.seasonEn} / ${flag.pageEn} / ${flag.level}`,
+      `${i + 1}. [${flag.reason}] ${reasonLabelBoth(flag.reason)}`,
+      `   ${flag.seriesEn} / ${flag.seasonEn} / ${flag.pageEn} / ${flag.level}`,
       `   EN: ${flag.en}`,
       `   VI: ${flag.vi}`,
       "",
