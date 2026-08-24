@@ -6,7 +6,7 @@ import {
   flagKey,
   formatFlagsForGrok,
   loadFlags,
-  reasonLabel,
+  reasonLabelBoth,
   saveFlags,
   type FlagReasonId,
   type LexiconFlag,
@@ -38,7 +38,7 @@ export function LexiconPanel({
   uiLang: "en" | "vi";
   lexiconLabel: string;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [flags, setFlags] = useState<LexiconFlag[]>([]);
   const [picking, setPicking] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -59,14 +59,6 @@ export function LexiconPanel({
     return map;
   }, [flags]);
 
-  const pageFlags = flags.filter(
-    (flag) =>
-      flag.seriesId === seriesId &&
-      flag.seasonId === seasonId &&
-      flag.pageId === pageId &&
-      flag.level === level,
-  );
-
   const upsert = (row: Row, reason: FlagReasonId) => {
     const next: LexiconFlag = {
       seriesId,
@@ -82,10 +74,7 @@ export function LexiconPanel({
       flaggedAt: new Date().toISOString(),
     };
     const key = flagKey(next);
-    setFlags((prev) => {
-      const without = prev.filter((item) => flagKey(item) !== key);
-      return [...without, next];
-    });
+    setFlags((prev) => [...prev.filter((item) => flagKey(item) !== key), next]);
     setPicking(null);
   };
 
@@ -93,6 +82,11 @@ export function LexiconPanel({
     const key = flagKey({ seriesId, seasonId, pageId, level, en: row.en, vi: row.vi });
     setFlags((prev) => prev.filter((item) => flagKey(item) !== key));
     setPicking(null);
+  };
+
+  const onRowTap = (row: Row) => {
+    const key = flagKey({ seriesId, seasonId, pageId, level, en: row.en, vi: row.vi });
+    setPicking((current) => (current === key ? null : key));
   };
 
   const copyReport = async () => {
@@ -135,100 +129,78 @@ export function LexiconPanel({
           {flags.length > 0 && (
             <div className="flex flex-wrap items-center gap-2 border-b border-border bg-surface-2 px-3 py-2">
               <p className="text-xs font-semibold text-accent">
-                {uiLang === "vi" ? `Đã gắn cờ (${flags.length})` : `Flagged (${flags.length})`}
+                Flagged / Đã gắn cờ ({flags.length})
               </p>
               <Button type="button" variant="secondary" size="sm" className="h-9" onClick={copyReport}>
-                {copied
-                  ? uiLang === "vi"
-                    ? "Đã chép"
-                    : "Copied"
-                  : uiLang === "vi"
-                    ? "Chép cho Grok"
-                    : "Copy for Grok"}
+                {copied ? "Copied / Đã chép" : "Copy for Grok / Chép cho Grok"}
               </Button>
               <Button type="button" variant="secondary" size="sm" className="h-9" onClick={() => setFlags([])}>
-                {uiLang === "vi" ? "Xóa hết" : "Clear all"}
+                Clear all / Xóa hết
               </Button>
             </div>
           )}
 
-          <table className="w-full table-fixed text-left text-sm">
-            <thead>
-              <tr className="border-b border-border bg-surface-2">
-                <th className="w-12 px-1 py-2" />
-                <th className="w-[44%] px-2 py-2 font-display text-xs font-semibold tracking-wide text-primary">
-                  {uiLang === "vi" ? "Tiếng Anh" : "English"}
-                </th>
-                <th className="w-[44%] px-2 py-2 font-display text-xs font-semibold tracking-wide text-accent">
-                  Nam Bộ
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => {
-                const key = flagKey({ seriesId, seasonId, pageId, level, en: row.en, vi: row.vi });
-                const flagged = flagMap.get(key);
-                const showChips = picking === key;
-                return (
-                  <tr key={key} className={cn("border-b border-border/70 last:border-0", flagged && "bg-accent/10")}>
-                    <td className="px-1 py-1 align-top" colSpan={showChips ? 3 : 1}>
-                      {!showChips ? (
+          <ul className="divide-y divide-border/70">
+            {rows.map((row) => {
+              const key = flagKey({ seriesId, seasonId, pageId, level, en: row.en, vi: row.vi });
+              const flagged = flagMap.get(key);
+              const showChips = picking === key;
+              return (
+                <li key={key} className={cn(flagged && "bg-accent/10", showChips && "bg-surface-2")}>
+                  <button
+                    type="button"
+                    aria-pressed={Boolean(flagged) || showChips}
+                    onClick={() => onRowTap(row)}
+                    className="flex min-h-14 w-full items-start gap-2 px-3 py-3 text-left"
+                  >
+                    <Flag
+                      className={cn("mt-0.5 size-5 shrink-0", flagged || showChips ? "fill-accent text-accent" : "text-muted")}
+                      aria-hidden="true"
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-pretty text-sm text-ink">{row.en}</span>
+                      <span className="mt-0.5 block text-pretty text-sm text-ink">{row.vi}</span>
+                      {flagged && (
+                        <span className="mt-1 block text-[11px] font-medium text-accent">
+                          {reasonLabelBoth(flagged.reason)}
+                        </span>
+                      )}
+                    </span>
+                  </button>
+                  {showChips && (
+                    <div className="flex flex-wrap gap-2 px-3 pb-3">
+                      {FLAG_REASONS.map((reason) => (
+                        <button
+                          key={reason.id}
+                          type="button"
+                          onClick={() => upsert(row, reason.id)}
+                          className="min-h-11 rounded-full border border-border bg-paper px-3 text-left text-xs font-medium text-ink"
+                        >
+                          {reason.en} / {reason.vi}
+                        </button>
+                      ))}
+                      {flagged && (
                         <button
                           type="button"
-                          aria-pressed={Boolean(flagged)}
-                          aria-label={uiLang === "vi" ? "Gắn cờ bản dịch" : "Flag translation"}
-                          onClick={() => {
-                            if (flagged) clearRow(row);
-                            else setPicking(key);
-                          }}
-                          className="flex size-11 items-center justify-center rounded-full text-muted hover:bg-surface-2 hover:text-accent"
+                          onClick={() => clearRow(row)}
+                          className="min-h-11 rounded-full px-3 text-xs font-medium text-muted"
                         >
-                          <Flag className={cn("size-5", flagged && "fill-accent text-accent")} aria-hidden="true" />
+                          Remove flag / Bỏ cờ
                         </button>
-                      ) : (
-                        <div className="flex flex-wrap gap-1.5 px-1 py-1">
-                          {FLAG_REASONS.map((reason) => (
-                            <button
-                              key={reason.id}
-                              type="button"
-                              onClick={() => upsert(row, reason.id)}
-                              className="h-9 rounded-full border border-border bg-paper px-3 text-xs font-medium text-ink"
-                            >
-                              {uiLang === "vi" ? reason.vi : reason.en}
-                            </button>
-                          ))}
-                          <button type="button" onClick={() => setPicking(null)} className="h-9 rounded-full px-3 text-xs text-muted">
-                            {uiLang === "vi" ? "Hủy" : "Cancel"}
-                          </button>
-                        </div>
                       )}
-                    </td>
-                    {!showChips && (
-                      <>
-                        <td className="px-2 py-2 align-top text-pretty text-ink">{row.en}</td>
-                        <td className="px-2 py-2 align-top text-pretty text-ink">
-                          {row.vi}
-                          {flagged && (
-                            <span className="mt-1 block text-[11px] font-medium text-accent">
-                              {reasonLabel(flagged.reason, uiLang)}
-                            </span>
-                          )}
-                        </td>
-                      </>
-                    )}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      <button type="button" onClick={() => setPicking(null)} className="min-h-11 rounded-full px-3 text-xs text-muted">
+                        Cancel / Hủy
+                      </button>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
 
-          {pageFlags.length > 0 && (
-            <p className="px-3 py-2 text-[11px] text-muted">
-              {uiLang === "vi"
-                ? "Cờ được lưu trên máy này. Bấm Chép cho Grok rồi dán vào đoạn chat."
-                : "Flags stay on this device. Copy for Grok, then paste in chat."}
-            </p>
-          )}
+          <p className="px-3 py-2 text-[11px] text-muted">
+            Tap a row to flag it. / Chạm một dòng để gắn cờ.
+          </p>
         </div>
       )}
     </div>
