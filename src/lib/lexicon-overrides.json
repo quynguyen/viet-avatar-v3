@@ -1,0 +1,36 @@
+{
+  "s1-cover": {
+    "preschool": [
+      { "en": "this", "vi": "Đây" },
+      { "en": "is", "vi": "là" },
+      { "en": "Aang", "vi": "Aang" },
+      { "en": "Season", "vi": "Mùa" },
+      { "en": "one", "vi": "một" },
+      { "en": "water", "vi": "nước" },
+      { "en": "learns", "vi": "học" },
+      { "en": "move", "vi": "làm" },
+      { "en": "Season one", "vi": "Mùa một" },
+      { "en": "water season", "vi": "Mùa nước" },
+      { "en": "move water", "vi": "làm nước" },
+      { "en": "to move water", "vi": "làm nước" },
+      { "en": "learns to move water", "vi": "học làm nước" },
+      { "en": "This is Aang", "vi": "Đây là chuyện Aang" },
+      { "en": "Aang learns to move water", "vi": "Aang học làm nước" }
+    ]
+  },
+  "s1-ice": {
+    "preschool": [
+      { "en": "fell", "vi": "rớt" },
+      { "en": "Aang was scared", "vi": "Aang sợ" },
+      { "en": "Aang ran with Appa", "vi": "Aang chạy với Appa" },
+      { "en": "They fell in the water", "vi": "Hai bạn rớt xuống nước" },
+      { "en": "The water was so cold", "vi": "Nước lạnh lắm" },
+      { "en": "They slept in the ice", "vi": "Hai bạn ngủ trong đá lạnh" },
+      { "en": "They slept a long, long time", "vi": "Ngủ lâu lắm" },
+      { "en": "was scared", "vi": "sợ" },
+      { "en": "so cold", "vi": "lạnh lắm" },
+      { "en": "a long, long time", "vi": "lâu lắm" },
+      { "en": "slept in the ice", "vi": "ngủ trong đá lạnh" }
+    ]
+  }
+}

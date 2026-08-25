@@ -1,4 +1,5 @@
 import story from "./story.json";
+import lexiconOverrides from "./lexicon-overrides.json";
 
 export type Lang = "vi" | "en";
 export type Mode = "normal" | "learn";
@@ -43,7 +44,35 @@ export const LEVELS = story.levels as ReadonlyArray<{
   vi: string;
   en: string;
 }>;
-export const SERIES = (story.series as Series[]).filter((item) => !item.archived);
+function applyLexiconOverrides(series: Series[]): Series[] {
+  const overrides = lexiconOverrides as Record<string, Partial<Record<LevelId, LexiconEntry[]>>>;
+  return series.map((item) => ({
+    ...item,
+    seasons: item.seasons.map((season) => ({
+      ...season,
+      pages: season.pages.map((page) => {
+        const pageOverrides = overrides[page.id];
+        if (!pageOverrides) return page;
+        return {
+          ...page,
+          lexicon: {
+            ...page.lexicon,
+            ...Object.fromEntries(
+              (Object.keys(pageOverrides) as LevelId[]).map((level) => [
+                level,
+                pageOverrides[level] ?? page.lexicon[level],
+              ]),
+            ),
+          },
+        };
+      }),
+    })),
+  }));
+}
+
+export const SERIES = applyLexiconOverrides(
+  (story.series as Series[]).filter((item) => !item.archived),
+);
 
 export function audioPath(level: LevelId, lang: Lang, file: string) {
   return `/audio/${level}/${lang}/${file}.mp3`;
